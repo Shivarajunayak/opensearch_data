@@ -1,0 +1,481 @@
+GET hmcl-cv-ev-vida-vehicle-snapshot/_mapping
+
+GET _plugins/_ism/explain/vehicle-telemetry-stream-*
+
+GET _plugins/_ism/explain/hmcl-cv-master-telemetry-ev-vida-stream
+
+GET vehicle-telemetry-stream-2025.05.01
+
+
+GET _cat/indices/vehicle-telemetry-stream-*?v&s=index
+
+
+GET _plugins/_ism/explain/hmcl-cv-vehicle-disconnected-index-2025.06.01
+
+
+POST _plugins/_ism/explain
+{
+  "index": [
+    "hmcl-cv-vehicle-disconnected-index-2025.06.01"
+  ]
+}
+
+GET _cat/indices?v&expand_wildcards=all&s=index
+
+GET _cat/data_streams?v
+
+
+GET _alias
+
+
+
+
+GET _cat/indices?v&h=health,status,index,uuid,pri,rep,docs.count,docs.deleted,store.size,pri.store.size&s=index
+
+GET _plugins/_ism/explain/hmcl-cv-ev-vida-vehicle-snapshot
+
+
+
+
+POST _plugins/_ism/explain
+{
+  "index": ["*"]
+}
+
+
+GET /vehicle-snapshot/_search
+{
+  "query": {
+    "match": {
+      "vid": "ea2ff322-f322-4ff3229aea-8ff3229aea88d-88df4b"
+    }
+  }
+}
+
+GET _cat/plugins?v
+
+GET _cat/indices?v
+
+
+GET /_index_template
+
+
+DELETE /hmcl-cv-master-telemetry-ev-stream
+
+
+
+
+POST _plugins/_ism/add/hmcl-cv-vehicle-disconnected-index
+{ 
+  "policy_id": "hmcl-cv-prod-index-delete-after-60d"
+}
+
+
+GET hmcl-cv-charging-screen-ev-vida-stream/_mapping
+
+
+PUT hmcl-cv-vehicle-connected-index/_mapping
+{
+  "properties": {
+    "sessionIdentifier": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
+
+PUT hmcl-cv-vehicle-disconnected-index/_mapping
+{
+  "properties": {
+    "sessionIdentifier": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
+
+PUT hmcl-cv-vehicle-connectionfail-index/_mapping
+{
+  "properties": {
+    "sessionIdentifier": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
+
+
+PUT hmcl-cv-charging-screen-ev-vida-stream
+{
+  "mappings": {
+    "properties": {
+      "_class": {
+        "type": "keyword",
+        "index": false,
+        "doc_values": false
+      },
+      "altitude": {
+        "type": "float"
+      },
+      "batteryChargingStatus": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "batteryDetection": {
+        "type": "float"
+      },
+      "batteryOperationMode": {
+        "type": "float"
+      },
+      "batteryPackTemperature": {
+        "type": "float"
+      },
+      "batterySlotIdentityFront": {
+        "type": "float"
+      },
+      "batterySlotIdentityRear": {
+        "type": "float"
+      },
+      "battery_health_status": {
+        "type": "text"
+      },
+      "battery_temperature": {
+        "type": "double"
+      },
+      "bleConnectivity": {
+        "type": "boolean"
+      },
+      "bms1BatteryPackTemperature": {
+        "type": "float"
+      },
+      "bms1SocUserPercentage": {
+        "type": "float"
+      },
+      "bms1SohPercentage": {
+        "type": "float"
+      },
+      "bms2BatteryOperationMode": {
+        "type": "float"
+      },
+      "bms2BatteryPackTemperature": {
+        "type": "float"
+      },
+      "bms2SocUserPercentage": {
+        "type": "float"
+      },
+      "bms2SohPercentage": {
+        "type": "float"
+      },
+      "bmsBduConnectionRequest": {
+        "type": "float"
+      },
+      "bmsBduStatus": {
+        "type": "float"
+      },
+      "bmsChargeStartRequest": {
+        "type": "float"
+      },
+      "bmsStatus": {
+        "type": "float"
+      },
+      "brakeStatus": {
+        "type": "float"
+      },
+      "campaignName": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "campaign_name": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "chargeCurrentSet": {
+        "type": "float"
+      },
+      "chargerIdentity": {
+        "type": "float"
+      },
+      "chargerIdentityDesc": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "chargerOutputCurrent": {
+        "type": "float"
+      },
+      "chargerOutputVoltage": {
+        "type": "float"
+      },
+      "chargerPowerState": {
+        "type": "float"
+      },
+      "chargerState": {
+        "type": "float"
+      },
+      "chargerStateDesc": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "chargerStatus": {
+        "type": "boolean"
+      },
+      "chargerVoltageSet": {
+        "type": "float"
+      },
+      "chargingSessionId": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "charging_duration": {
+        "type": "text"
+      },
+      "charging_state": {
+        "type": "text"
+      },
+      "charging_type": {
+        "type": "text"
+      },
+      "cog": {
+        "type": "float"
+      },
+      "collectionEventTime": {
+        "type": "float"
+      },
+      "collectionEventTimeTsp": {
+        "type": "date"
+      },
+      "cutOffCurrent": {
+        "type": "float"
+      },
+      "endTimestamp": {
+        "type": "float"
+      },
+      "energy_consumed": {
+        "type": "double"
+      },
+      "energy_price": {
+        "type": "double"
+      },
+      "estimatedChargingTime": {
+        "type": "float"
+      },
+      "eventId": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "expected_soc": {
+        "type": "double"
+      },
+      "gpsFix": {
+        "type": "float"
+      },
+      "gpsSpeed": {
+        "type": "float"
+      },
+      "gpsValid": {
+        "type": "boolean"
+      },
+      "hdop": {
+        "type": "float"
+      },
+      "latitude": {
+        "type": "float"
+      },
+      "longitude": {
+        "type": "float"
+      },
+      "motorStatus": {
+        "type": "float"
+      },
+      "odoVcu": {
+        "type": "float"
+      },
+      "packCurrent": {
+        "type": "float"
+      },
+      "packVoltage": {
+        "type": "float"
+      },
+      "pdop": {
+        "type": "float"
+      },
+      "preChargeCurrent": {
+        "type": "float"
+      },
+      "rate_of_charging": {
+        "type": "double"
+      },
+      "remainingCapacity": {
+        "type": "float"
+      },
+      "remainingRange": {
+        "type": "float"
+      },
+      "satelliteInUse": {
+        "type": "float"
+      },
+      "satelliteInView": {
+        "type": "float"
+      },
+      "session_id": {
+        "type": "long"
+      },
+      "soc": {
+        "type": "double"
+      },
+      "soh": {
+        "type": "float"
+      },
+      "startTimestamp": {
+        "type": "float"
+      },
+      "systemTime": {
+        "type": "float"
+      },
+      "systemTimeTsp": {
+        "type": "date"
+      },
+      "temperatureStatusVcu": {
+        "type": "boolean"
+      },
+      "tenantId": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "thermalRunStatusAggregate": {
+        "type": "float"
+      },
+      "thermalRunawayWarning": {
+        "type": "float"
+      },
+      "time_to_full_charge": {
+        "type": "text"
+      },
+      "timestamp": {
+        "type": "long"
+      },
+      "totalUsableCapacity": {
+        "type": "float"
+      },
+      "totalUsableEnergy": {
+        "type": "float"
+      },
+      "totalUsableEnergyBms1": {
+        "type": "float"
+      },
+      "totalUsableEnergyBms2": {
+        "type": "float"
+      },
+      "userId": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "userProfile": {
+        "type": "float"
+      },
+      "vdop": {
+        "type": "float"
+      },
+      "vehicle_fault_code_dtc": {
+        "type": "text"
+      },
+      "vehicle_soh": {
+        "type": "double"
+      },
+      "vid": {
+        "type": "text"
+      }
+    }
+  }
+}
+
+PUT /hmcl-cv-charging-analytics-ev-vida-index/_mapping
+{
+  "properties": {
+    "b2bclientid": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    }
+  }
+}
+
+
+GET /_nodes/stats
+
+GET _tasks?detailed=true&actions=*search
+
+
+POST _tasks/d4Hy2rnpRU2Ih2YqNpCyHw:108794240/_cancel
+
+GET _cat/allocation?v&h=node,disk.total,disk.used,disk.avail,disk.percent
+
+GET _cat/indices?v&s=store.size:desc
+
+GET _stats/store
+
+GET _cat/shards?v
+
+GET _cat/indices?v&s=store.size:desc
+
+
