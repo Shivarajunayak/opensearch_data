@@ -1,0 +1,1369 @@
+GET _cat/indices?v
+
+GET _cat/plugins?v
+
+
+PUT hmcl-cv-vehicle-connected-index/_settings
+{
+  "index.lifecycle.name": "delete_after_180d",
+  "index.lifecycle.rollover_alias": "vehicle-telemetry"
+}
+
+
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": ".ds-hmcl-cv-master-telemetry-ev-vida-stream-*",
+        "alias": "hmcl-cv-master-telemetry-ev-vida-stream",
+        "is_write_index": true
+      }
+    }
+  ]
+}
+
+
+POST _plugins/_ism/add/.ds-hmcl-cv-master-telemetry-ev-vida-stream-000041
+{
+  "policy_id": "hmcl-cv-dev-index-rollover-and-delete-test"
+}
+
+
+
+GET _cat/indices/hmcl-cv-master-telemetry-ev-vida-stream*?v
+
+
+
+PUT _plugins/_ism/templates/hmcl-cv-test-stream-template
+{
+  "index_patterns": ["hmcl-cv-master-telemetry-ev-vida-stream"],
+  "policy_id": "hmcl-cv-dev-index-rollover-and-delete",
+  "priority": 100
+}
+
+
+GET _nodes/plugins
+
+
+GET /_data_stream
+
+GET _plugins/_ism/explain/
+ 
+DELETE /_data_stream/hmcl-cv-vehicle-state
+
+PUT /_data_stream/hmcl-cv-vehicle-state
+
+
+PUT /_data_stream/hmcl-cv-vehicle-state
+
+GET /_plugins/_ism/explain/hmcl-cv-vehicle-state
+
+GET _plugins/_ism/explain/.ds-hmcl-cv-vehicle-state-000001
+
+GET _plugins/_ism/policies/hmcl-cv-dev-index-rollover-and-delete
+
+GET .ds-hmcl-cv-vehicle-state-000001/_settings
+
+GET /_data_stream/hmcl-cv-vehicle-state
+
+
+POST /hmcl-cv-vehicle-state/_rollover
+
+GET _plugins/_ism/explain/
+
+
+PUT _plugins/_ism/policies/hmcl-cv-dev-index-rollover-and-delete
+{
+  "policy": {
+    "policy_id": "hmcl-cv-dev-index-rollover-and-delete",
+    "description": "Rollover daily, delete after 2 days",
+    "last_updated_time": 1754470718400,
+    "schema_version": 21,
+    "error_notification": null,
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          {
+            "retry": {
+              "count": 3,
+              "backoff": "exponential",
+              "delay": "1m"
+            },
+            "rollover": {
+              "min_index_age": "1d",
+              "copy_alias": false
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "state_name": "delete",
+            "conditions": {
+              "min_index_age": "3d"
+            }
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          {
+            "retry": {
+              "count": 3,
+              "backoff": "exponential",
+              "delay": "1m"
+            },
+            "delete": {}
+          }
+        ],
+        "transitions": []
+      }
+    ],
+    "ism_template": {
+      "index_patterns": [".ds*"]
+    }
+  }
+}
+
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-template
+{
+  "index_patterns": ["hmcl-cv-master-telemetry-ev-vida-stream*"],
+  "data_stream": {},
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "vehicle_id": { "type": "keyword" },
+        "telemetry_type": { "type": "keyword" },
+        "data": { "type": "object" }
+      }
+    }
+  },
+  "priority": 100
+}
+
+
+POST _plugins/_ism/add
+{
+  "policy_id": "hmcl-cv-dev-index-rollover-and-delete",
+  "index": ".ds-hmcl-cv-master-telemetry-ev-vida-stream*"
+}
+
+PUT _index_template/hmcl-cv-master-template
+{
+  "index_patterns": ["hmcl-cv-master-telemetry-ev-vida-stream*"],
+  "data_stream": {},
+  "template": {
+    "settings": {
+      "opendistro.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        }
+      }
+    }
+  },
+  "priority": 500
+}
+
+
+POST _plugins/_ism/change_policy/.ds-hmcl-cv-master-telemetry-ev-vida-stream-0000010
+{
+  "policy_id": "hmcl-cv-dev-index-rollover-and-delete"
+}
+
+
+
+GET _cat/indices/.ds-*?s=creation.date:desc
+
+GET _cat/indices/.ds-*?v
+
+GET _cat/indices/.ds-hmcl-cv-master-telemetry-ev-vida-stream*?v
+
+GET _cat/indices/.ds-*?format=json
+
+GET _data_stream
+
+GET /_cat/indices/.ds-hmcl-cv-master-telemetry-ev-vida-stream-*?h=index,creation.date.string&s=creation.date
+
+GET /.ds-hmcl-cv-master-telemetry-ev-vida-stream-*/_settings?pretty
+
+GET /_cat/indices/.ds-hmcl-cv-master-telemetry-ev-vida-stream-*?h=index,creation.date.string&s=creation.date
+
+
+GET _plugins/_ism/explain/.ds-hmcl-cv-master-telemetry-ev-vida-stream-*?pretty
+
+GET _index_template?filter_path=**.index_patterns,**.priority,**.settings.plugins.index_state_management.policy_id
+
+GET _plugins/_ism/explain/.ds-hmcl-cv-master-telemetry-ev-vida-stream-*
+
+
+GET _data_stream/hmcl-cv-master-telemetry-ev-vida-stream
+
+GET _plugins/_ism/explain/hmcl-cv-master-telemetry-ev-vida-stream
+
+GET hmcl-cv-master-telemetry-ev-vida-stream/_mapping
+
+GET _plugins/_ism/explain/hmcl-cv-master-telemetry-ev-vida-stream
+
+
+GET hmcl-cv-master-telemetry-ev-vida-stream/_count
+
+GET /.ds-hmcl-cv-master-telemetry-ev-vida-stream-000008/_count
+
+DELETE /.ds-hmcl-cv-master-telemetry-ev-vida-stream-000025
+
+POST hmcl-cv-master-telemetry-ev-vida-stream/_rollover
+
+
+GET _data_stream/hmcl-cv-master-telemetry-ev-vida-stream
+
+
+
+GET _plugins/_ism/policies/hmcl-cv-dev-index-rollover-and-delete
+
+
+POST hmcl-cv-master-telemetry-ev-vida-stream/_doc
+{
+  "@timestamp": "2025-08-06T14:10:00Z",
+  "collectioneventtimets": "2025-08-06T14:10:00Z",
+  "message": "test document"
+}
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-stream
+{
+  "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream*"],
+  "priority": 100,
+  "data_stream": {},
+  "template": {
+    "settings": {
+      "plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete-test",
+      "plugins.index_state_management.rollover_alias": "hmcl-cv-master-telemetry-ev-vida-stream"
+    }
+  }
+}
+
+GET _index_template?filter_path=**.index_patterns,**.priority
+
+GET _index_template
+
+GET _index_template?filter_path=index_templates.index_template.priority,index_templates.index_template.name
+
+GET _index_template?filter_path=index_templates.index_template.name,index_templates.index_template.priority
+
+GET _index_template?filter_path=index_templates.index_template.name,index_templates.index_template.priority,index_templates.index_template.index_patterns
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-stream
+{
+  "index_patterns": [
+    ".ds-hmcl-cv-master-telemetry-ev-vida-stream-*"
+  ],
+  "priority": 600,
+  "template": {
+    "settings": {
+      "index": {
+        "lifecycle": {
+          "name": "hmcl-cv-dev-index-rollover-and-delete-test",
+          "rollover_alias": "hmcl-cv-telemetry-ev-vida-stream"
+        }
+      }
+    },
+    "aliases": {
+      "hmcl-cv-telemetry-ev-vida-stream": {
+        "is_write_index": true
+      }
+    },
+    "mappings": {}
+  }
+}
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-stream
+{
+  "index_patterns": [
+    ".ds-hmcl-cv-master-telemetry-ev-vida-stream-*"
+  ],
+  "priority": 600,
+  "template": {
+    "settings": {
+      "index": {
+        "routing": {
+          "allocation": {
+            "require": {
+              "data": "hot"
+            }
+          }
+        }
+      }
+    },
+    "aliases": {
+      "hmcl-cv-telemetry-ev-vida-stream": {
+        "is_write_index": true
+      }
+    },
+    "mappings": {
+      // your mappings here
+    }
+  }
+}
+
+
+
+
+GET hmcl-cv-master-telemetry-ev-vida-stream/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+PUT _index_template/ism_rollover
+{
+  "index_patterns": [".ds*"],
+  "priority": 100,
+  "template": {
+    "settings": {
+      "plugins.index_state_management.rollover_alias": ".ds"
+    }
+  },
+  "composed_of": [],
+  "version": 1,
+  "_meta": {
+    "description": "Index template for ISM rollover policy with higher priority"
+  }
+}
+
+
+GET _plugins/_ism/explain/hmcl-cv-master-telemetry-ev-vida-stream*
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-template
+{
+  "index_patterns": ["hmcl-cv-master-telemetry-ev-vida-stream*"],
+  "template": {
+    "settings": {
+      "index.plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete",
+      "index.plugins.index_state_management.rollover_alias": "hmcl-cv-master-telemetry-ev-vida-stream"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "collectioneventtimets": {
+          "type": "date"
+        },
+        "message": {
+          "type": "text"
+        }
+      }
+    }
+  },
+  "data_stream": {
+    "timestamp_field": {
+      "name": "@timestamp"
+    }
+  }
+}
+
+
+POST hmcl-cv-master-telemetry-ev-vida-stream/_doc
+{
+  "@timestamp": "2025-08-06T14:40:00Z",
+  "collectioneventtimets": "2025-08-06T14:40:00Z",
+  "message": "new document to create DS"
+}
+
+DELETE _data_stream/hmcl-cv-master-telemetry-ev-vida-stream
+
+GET _plugins/_ism/explain/hmcl-cv-master-telemetry-ev-vida-stream
+
+GET _cluster/settings?include_defaults=true&flat_settings=true
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-template
+{
+  "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream*"],
+  "template": {
+    "settings": {
+      "index.opendistro.index_state_management.rollover_alias": ".ds-hmcl-cv-master-telemetry-ev-vida-stream*"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        }
+      }
+    }
+  },
+  "data_stream": {
+    "timestamp_field": {
+      "name": "@timestamp"
+    }
+  },
+  "priority": 500
+}
+
+
+GET .ds-hmcl-cv-master-telemetry-ev-vida-stream-*/_settings
+
+PUT _plugins/_ism/policies/hmcl-cv-dev-index-rollover-and-delete-ds
+{
+  "policy": {
+    "policy_id": "hmcl-cv-dev-index-rollover-and-delete-ds",
+    "description": "Rollover daily, delete after 2 days",
+    "default_state": "hot",
+    "ism_template": [
+      {
+        "index_patterns": [".ds-hmcl-cv*"],
+        "priority": 100
+      }
+    ],
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          {
+            "rollover": {
+              "min_index_age": "1d"
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "state_name": "delete",
+            "conditions": {
+              "min_index_age": "3d"
+            }
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          {
+            "delete": {}
+          }
+        ],
+        "transitions": []
+      }
+    ]
+  }
+}
+
+
+PUT _index_template/hmcl-cv-template
+{
+  "index_patterns": ["hmcl-cv-master-telemetry-ev-vida-stream*"],
+  "template": {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        }
+      }
+    }
+  },
+  "priority": 500
+}
+
+PUT hmcl-cv-master-telemetry-ev-vida-stream-000008/_settings
+{
+  "settings": {
+    "opendistro.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete"
+  }
+}
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-template
+{
+  "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream*"],
+  "template": {
+    "settings": {
+      "index.plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete"
+    }
+  },
+  "priority": 0,
+  "data_stream": {}
+}
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-template
+{
+  "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream-*"],
+  "data_stream": {},
+  "template": {
+    "settings": {
+      "index.plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete"
+    },
+    "mappings": {
+      "properties": {
+        "timestamp": {
+          "type": "date"
+        }
+      }
+    }
+  },
+  "priority": 50
+}
+
+
+GET _index_template/hmcl-cv-master-telemetry-ev-vida-template
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-template
+{
+  "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream-*"],
+  "template": {
+    "settings": {
+      "index": {
+        "plugins": {
+          "index_state_management": {
+            "policy_id": "hmcl-cv-dev-index-rollover-and-delete"
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        }
+      }
+    }
+  },
+  "priority": 50,
+  "data_stream": {
+    "timestamp_field": {
+      "name": "@timestamp"
+    }
+  }
+}
+
+
+GET _cat/indices/.ds-hmcl-cv-master-telemetry-ev-vida-stream-*?h=index
+
+GET /.ds-hmcl-cv-master-telemetry-ev-vida-stream-000003/_settings
+
+DELETE /_data_stream/.ds-hmcl-cv-master-telemetry-ev-vida-stream-000037
+
+GET /_data_stream/hmcl-cv-master-telemetry-ev-vida-stream
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-template
+{
+  "index_patterns": [".ds*"],
+  "data_stream": {},
+  "template": {
+    "settings": {
+      "index.plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete"
+    }
+  }
+}
+
+
+GET _plugins/_ism/policies/hmcl-cv-dev-index-rollover-and-delete
+
+
+PUT _plugins/_ism/policies/rollover_policy
+{
+  "policy": {
+    "description": "Example rollover policy.",
+    "default_state": "rollover",
+    "states": [
+      {
+        "name": "rollover",
+        "actions": [
+          {
+            "rollover": {
+              "min_doc_count": 1
+            }
+          }
+        ],
+        "transitions": []
+      }
+    ],
+    "ism_template": {
+      "index_patterns": ["log*"],
+      "priority": 100
+    }
+  }
+}
+
+
+PUT _index_template/ism_rollover
+{
+  "index_patterns": ["test*"],
+  "template": {
+    "settings": {
+      "plugins.index_state_management.rollover_alias": "test"
+    }
+  }
+} 
+
+
+PUT _index_template/ism_rollover
+{
+  "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream*"],
+  "template": {
+   "settings": {
+    "plugins.index_state_management.rollover_alias": "hmcl-cv-master-telemetry-ev-vida-stream"
+   }
+ }
+}
+
+PUT .ds-hmcl-cv-master-telemetry-ev-vida-stream-000027
+{
+  "aliases": {
+    "hmcl-cv-master-telemetry-ev-vida-stream": {
+      "is_write_index": false
+    }
+  }
+}
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-stream
+{
+  "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream-*"],
+  "priority": 100,
+  "data_stream": { },
+  "template": {
+    "settings": {
+      "plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete",
+      "plugins.index_state_management.rollover_alias": "hmcl-cv-master-telemetry-ev-vida-stream"
+    }
+  }
+}
+
+PUT _index_template/ism_rollover_one
+{
+  "index_patterns": [ ".ds-hmcl-cv-master-telemetry-ev-vida-stream*" ],
+  "priority": 400,
+  "data_stream": { },
+  "template": {
+    "settings": {
+      "plugins.index_state_management.rollover_alias": "hmcl-cv-master-telemetry-ev-vida-stream"
+    }
+  }
+}
+
+GET _index_template/_simulate_index/.ds-hmcl-cv-master-telemetry-ev-vida-stream-000034
+
+
+DELETE _index_template/ism_rollover
+
+
+PUT .ds-hmcl-cv
+{
+  "aliases": {
+    ".ds-hmcl-cv": {
+      "is_write_index": false
+    }
+  }
+}
+
+
+POST log/_doc
+{
+  "message": "dummy"
+}
+
+GET _plugins/_ism/explain/log-*?pretty
+
+
+PUT _index_template/hmcl-cv-ism-template
+{
+  "index_patterns": [
+    ".ds-hmcl-cv-master-telemetry-ev-vida-stream-*"
+  ],
+  "priority": 500,
+  "template": {
+    "settings": {
+      "plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete"
+    }
+  }
+}
+
+
+GET .ds-hmcl-cv-master-telemetry-ev-vida-stream-*/_settings?flat_settings
+
+
+PUT _plugins/_ism/policies/hmcl-cv-dev-index-rollover-and-delete-test
+{
+  "policy": {
+    "description": "Rollover every 5 minutes, delete after 3 days",
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          {
+            "rollover": {
+              "min_index_age": "5m"
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "state_name": "delete",
+            "conditions": {
+              "min_index_age": "3d"
+            }
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          {
+            "delete": {}
+          }
+        ],
+        "transitions": []
+      }
+    ],
+    "ism_template": [
+      {
+        "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream*"],
+        "priority": 100
+      }
+    ]
+  }
+}
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-stream
+{
+  "index_patterns": [
+    ".ds-hmcl-cv-master-telemetry-ev-vida-stream-*"
+  ],
+  "priority": 100,
+  "template": {
+    "settings": {
+      "index": {
+        "plugins": {
+          "index_state_management": {
+            "policy_id": "hmcl-cv-dev-index-rollover-and-delete-test"
+          }
+        }
+      }
+    },
+    "aliases": {
+      "hmcl-cv-telemetry-ev-vida-stream": {
+        "is_write_index": true
+      }
+    }
+  }
+}
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-stream
+{
+  "index_patterns": [
+    ".ds-hmcl-cv-master-telemetry-ev-vida-stream-*"
+  ],
+  "priority": 100,
+  "data_stream": {},
+  "template": {
+    "settings": {
+      "index": {
+        "plugins": {
+          "index_state_management": {
+            "policy_id": "hmcl-cv-dev-index-rollover-and-delete-test"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+GET hmcl-cv-master-telemetry-ev-vida-stream-*/_settings
+
+
+GET _alias/hmcl-cv-telemetry-ev-vida-stream
+
+
+PUT _component_template/ct-hmcl-cv-master-telemetry-ev-vida-stream
+{
+  "template": {
+    "settings": {
+      "plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete-test"
+    }
+  }
+}
+
+POST _plugins/_ism/add
+{
+  "policy_id": "hmcl-cv-dev-index-rollover-and-delete-test",
+  "index": ".ds-hmcl-cv-master-telemetry-ev-vida-stream-000040"
+}
+
+
+GET _plugins/_ism/explain/.ds-hmcl-cv-master-telemetry-ev-vida-stream-*
+
+POST hmcl-cv-master-telemetry-ev-vida-stream/_rollover
+
+
+PUT _index_template/it-hmcl-cv-master-telemetry-ev-vida-stream
+{
+  "index_patterns": ["hmcl-cv-master-telemetry-ev-vida-stream"],
+  "priority": 300, 
+  "data_stream": {},
+  "composed_of": ["ct-hmcl-cv-master-telemetry-ev-vida-stream"]
+}
+
+DELETE _index_template/hmcl-cv-master-telemetry-ev-vida-template
+
+
+PUT _component_template/ct-hmcl-cv-master-telemetry-ev-vida-stream-ism
+{
+  "template": {
+    "settings": {
+      "index.plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete-test"
+    }
+  }
+}
+
+PUT _index_template/it-hmcl-cv-master-telemetry-ev-vida-stream
+{
+  "index_patterns": ["hmcl-cv-master-telemetry-ev-vida-stream"],
+  "priority": 300,
+  "data_stream": {},
+  "composed_of": [
+    "ct-hmcl-cv-master-telemetry-ev-vida-stream-ism",
+    "ct-hmcl-cv-master-telemetry-ev-vida-stream" 
+  ]
+}
+
+PUT _component_template/ct-hmcl-cv-master-telemetry-ev-vida-stream
+{
+  "template": {
+    "settings": {
+      "index.plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete-test"
+    }
+  }
+}
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-stream-template
+{
+  "index_patterns": ["hmcl-cv-master-telemetry-ev-vida-stream"],
+  "composed_of": ["ct-hmcl-cv-master-telemetry-ev-vida-stream"],
+  "priority": 500,
+  "data_stream": {}
+}
+
+POST _plugins/_ism/add/.ds-hmcl-cv-master-telemetry-ev-vida-stream-000038
+{
+  "policy_id": "hmcl-cv-dev-index-rollover-and-delete-test"
+}
+
+PUT _plugins/_ism/policies/hmcl-cv-dev-index-rollover-and-delete
+{
+  "policy": {
+    "description": "Rollover daily, delete after 3 days",
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          {
+            "rollover": {
+              "min_index_age": "1d"
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "state_name": "delete",
+            "conditions": {
+              "min_index_age": "3d"
+            }
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          { "delete": {} }
+        ],
+        "transitions": []
+      }
+    ],
+    "ism_template": [
+      {
+        "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream*"],
+        "priority": 100
+      }
+    ]
+  }
+}
+
+
+PUT _index_template/hmcl-cv-data-stream-template
+{
+  "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream*"],
+  "priority": 10,
+  "template": {
+    "settings": {
+      "plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete"
+    }
+  }
+}
+
+
+POST _plugins/_ism/add/.ds-hmcl-cv-master-telemetry-ev-vida-stream-*
+{
+  "policy_id": "hmcl-cv-dev-index-rollover-and-delete"
+}
+
+
+GET _index_template/hmcl-cv-data-stream-template
+
+
+PUT _plugins/_ism/policies/hmcl-cv-dev-index-rollover-and-delete-test
+{
+  "policy": {
+    "description": "Test: rollover every 1 minute, delete after 2 minutes",
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          {
+            "rollover": {
+              "min_index_age": "1m",
+              "min_doc_count": 1
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "state_name": "delete",
+            "conditions": {
+              "min_index_age": "2m",
+              "min_doc_count": 2
+            }
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          { "delete": {} }
+        ],
+        "transitions": []
+      }
+    ],
+    "ism_template": [
+      {
+        "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream*"],
+        "priority": 200
+      }
+    ]
+  }
+}
+
+POST _plugins/_ism/add/.ds-hmcl-cv-master-telemetry-ev-vida-stream-*
+{
+  "policy_id": "hmcl-cv-dev-index-rollover-and-delete-test"
+}
+
+PUT _index_template/hmcl-cv-data-stream-template-test
+{
+  "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-stream*"],
+  "priority": 300,
+  "template": {
+    "settings": {
+      "plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete-test"
+    }
+  }
+}
+
+
+POST hmcl-cv-master-telemetry-ev-vida-stream/_doc
+{ "test": "rollover validation" }
+
+
+GET _plugins/_ism/explain/hmcl-cv-master-telemetry-ev-vida-stream
+
+
+
+DELETE _data_stream/hmcl-cv-master-telemetry-ev-vida-stream
+
+DELETE _index_template/hmcl-cv-master-telemetry-ev-vida-stream
+
+DELETE _plugins/_ism/policies/hmcl-cv-dev-index-rollover-and-delete-test
+
+
+PUT _plugins/_ism/policies/hmcl-cv-dev-index-rollover-and-delete-test
+{
+  "policy": {
+    "description": "TEST: rollover every 1 minute, delete after 2 minutes",
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          { "rollover": { "min_index_age": "1m" } }
+        ],
+        "transitions": [
+          { "state_name": "delete", "conditions": { "min_index_age": "2m" } }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [ { "delete": {} } ],
+        "transitions": []
+      }
+    ],
+    "ism_template": [
+      {
+        "index_patterns": [".ds-hmcl-cv-master-telemetry-ev-vida-one*"],
+        "priority": 200
+      }
+    ]
+  }
+}
+
+
+PUT _index_template/hmcl-cv-test-data-stream-template
+{
+  "index_patterns": [
+    "hmcl-cv-master-telemetry-ev-vida-one*",
+    ".ds-hmcl-cv-master-telemetry-ev-vida-one*"
+  ],
+  "priority": 1000,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "plugins.index_state_management.policy_id": "hmcl-cv-dev-index-rollover-and-delete-test"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "message": { "type": "text" }
+      }
+    }
+  },
+  "data_stream": {}
+}
+
+PUT _data_stream/hmcl-cv-master-telemetry-ev-vida-stream
+
+
+GET _data_stream/hmcl-cv-master-telemetry-ev-vida-one
+GET _cat/indices/.ds-hmcl-cv-master-telemetry-ev-vida-one*?v
+
+
+POST hmcl-cv-master-telemetry-ev-vida-one/_doc
+{ "@timestamp": "2025-08-12T09:00:00Z", "message": "rollover test 1" }
+
+POST hmcl-cv-master-telemetry-ev-vida-one/_doc
+{ "@timestamp": "2025-08-12T09:00:30Z", "message": "rollover test 2" }
+
+
+POST hmcl-cv-master-telemetry-ev-vida-stream/_rollover
+
+GET _cat/indices/.ds-hmcl-cv-master-telemetry-ev-vida-one*?v
+
+GET _plugins/_ism/explain/.ds-hmcl-cv-master-telemetry-ev-vida-one-000002
+
+
+PUT _plugins/_ism/policies/hmcl-test-rollover
+{
+  "policy": {
+    "description": "Rollover every 1 minute for testing, delete after 2 days",
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          {
+            "rollover": {
+              "min_doc_count": 1
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "state_name": "delete",
+            "conditions": {
+              "min_doc_count": 2
+            }
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          { "delete": {} }
+        ]
+      }
+    ],
+    "ism_template": [
+      {
+        "index_patterns": [".ds-hmcl-test-datastream*"],
+        "priority": 200
+      }
+    ]
+  }
+}
+
+
+
+PUT _index_template/hmcl-test-datastream-template-test
+{
+  "index_patterns": [".ds-hmcl-test-datastream*"],
+  "data_stream": {},
+  "priority": 600,
+  "template": {
+    "settings": {
+      "plugins.index_state_management.policy_id": "test-datastream-rollover"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "message": { "type": "text" }
+      }
+    }
+  }
+}
+
+POST _plugins/_ism/add/test-datastream*
+{
+  "policy_id": "hmcl-test-rollover-auto"
+}
+
+POST hmcl-test-datastream/_doc
+{
+  "@timestamp": "2025-08-12T09:00:00Z",
+  "message": "Test event 1"
+}
+
+
+GET _cat/indices/test-datastream*?v
+
+POST test-datastream/_rollover
+
+GET _plugins/_ism/explain/.ds-test-datastream-000108
+
+
+GET hmcl-test-datastream/_count
+
+
+PUT _plugins/_ism/policies/hmcl-test-rollover-auto
+{
+  "policy": {
+    "description": "Auto-attach rollover every 1 min for testing, delete after 2 days",
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          { "rollover": { "min_index_age": "5m" } }
+        ],
+        "transitions": [
+          { "state_name": "delete", "conditions": { "min_index_age": "30m" } }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          {
+            "notification": {
+              "destination": {
+                "chime": {
+                  "url": "https://chat.googleapis.com/v1/spaces/AAQAH543yz0/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=y1MoM2RF0lQVj_KvaVQFJETVziAF0v4WUcu4zv5aBwI"
+                }
+              },
+              "message_template": {
+                "source": "The index {{ctx.index}} is being deleted"
+              }
+            }
+          },
+          {
+            "delete": {}
+          }
+        ]
+      }
+    ],
+    "ism_template": [
+      {
+        "index_patterns": ["test-datastream*"],
+        "priority": 200
+      }
+    ]
+  }
+}
+
+
+PUT _index_template/hmcl-test-datastream-template-auto
+{
+  "index_patterns": [".ds-hmcl-test-datastream-auto*"],
+  "data_stream": {},
+  "priority": 500,
+  "template": {
+    "settings": {
+      "plugins.index_state_management.policy_id": "hmcl-test-rollover-auto"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "message": { "type": "text" }
+      }
+    }
+  }
+}
+
+}
+
+PUT _data_stream/test-datastream
+
+DELETE _data_stream/test-datastream
+
+POST test-datastream/_doc
+{
+  "@timestamp": "2025-08-12T09:00:00Z",
+  "message": "Test event 1"
+}
+
+POST test-datastream/_rollover
+
+POST _index_template/_simulate_index/.ds-hmcl-test-datastream-auto-000004
+{}
+
+GET _cluster/settings?include_defaults=true
+
+GET _cat/plugins?v
+
+PUT _cluster/settings
+{
+  "persistent": {
+    "plugins.index_state_management.enabled": true
+  }
+}
+
+GET _index_template/hmcl-test-datastream-template
+
+PUT _index_template/hmcl-test-datastream-template
+{
+  "index_patterns": [".ds-hmcl-test-datastream-auto*"],
+  "template": {
+    "settings": {
+      "index": {
+        "plugins": {
+          "index_state_management": {
+            "policy_id": "test-datastream-rollover"
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "message": {
+          "type": "text"
+        }
+      }
+    }
+  },
+  "priority": 50,
+  "data_stream": {
+    "timestamp_field": {
+      "name": "@timestamp"
+    }
+  }
+}
+
+
+PUT _index_template/hmcl-cv-master-telemetry-ev-vida-stream-template
+{
+  "index_patterns": [
+    "hmcl-cv-master-telemetry-ev-vida-stream*"
+  ],
+  "data_stream": {},
+  "priority": 600,
+  "template": {
+    "mappings": {
+      "dynamic_templates": [
+        {
+          "strings_as_keyword": {
+            "match_mapping_type": "string",
+            "mapping": {
+              "type": "keyword"
+            }
+          }
+        }
+      ],
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "message": {
+          "type": "text"
+        }
+      }
+    }
+  }
+}
+
+
+
+PUT _plugins/_ism/policies/hmcl-test-rollover-auto
+{
+  "policy": {
+    "description": "Auto-attach rollover every 1 min for testing, delete after 2 days",
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          { "rollover": { "min_index_age": "5m" } }
+        ],
+        "transitions": [
+          { "state_name": "delete", "conditions": { "min_index_age": "30m" } }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          {
+            "notification": {
+              "destination": {
+                "custom_webhook": {
+                  "url": "https://chat.googleapis.com/v1/spaces/AAQAH543yz0/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=y1MoM2RF0lQVj_KvaVQFJETVziAF0v4WUcu4zv5aBwI"
+                }
+              },
+              "message_template": {
+                "source": "{\"text\": \"The index {{ctx.index}} is being deleted\"}"
+              }
+            }
+          },
+          {
+            "delete": {}
+          }
+        ]
+      }
+    ],
+    "ism_template": [
+      {
+        "index_patterns": ["test-datastream*"],
+        "priority": 200
+      }
+    ]
+  }
+}
