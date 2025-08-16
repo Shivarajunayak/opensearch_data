@@ -1,0 +1,546 @@
+trigger:
+  branches:
+    include:
+      - dev
+      - qa
+      - uat
+      - main
+
+  # paths:
+  #   include:
+  #     - HMCL/Lambda
+  #     - HMCL/Pipeline_Scripts
+
+pool:
+  name: eks-linux-pool
+
+resources:
+  - repo: self
+
+variables:
+  - group: DataLakeLibrary
+  - name: LOWERCASE_BRANCH_NAME
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: prod
+    ${{ else }}:
+      value: $[lower(replace(variables['Build.SourceBranch'], 'refs/heads/', ''))]
+
+stages:
+  - stage: CodeBuild
+    displayName: "IoT Lambda Code Build Stage"
+    jobs:
+      - job: ExcludeTestFromZip
+        displayName: Exclude Test From Zip
+        steps:
+           - task: CmdLine@2
+             inputs:
+               script: 'for i in test jest.config.js babel.config.js ; do find . -maxdepth 4 -name $i | xargs rm -rf $i ; done'
+      - job: ArchiveLambdaFiles
+        dependsOn:
+          - ExcludeTestFromZip
+        displayName: Archive Lambda Files Job
+        steps:
+          - task: ArchiveFiles@2
+            displayName: "create-zip-file-and-s3-upload - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/create-zip-file-and-s3-upload/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/create-zip-file-and-s3-upload.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "create-zip-file-and-s3-upload - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/create-zip-file-and-s3-upload.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "deactivate-and-delete-older-certificate - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/deactivate-and-delete-older-certificate/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/deactivate-and-delete-older-certificate.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "deactivate-and-delete-older-certificate - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/deactivate-and-delete-older-certificate.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "download-back-office-certificate - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/download-back-office-certificate/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/download-back-office-certificate.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "download-back-office-certificate - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/download-back-office-certificate.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "excelfore-certificate-sign-from-api - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/excelfore-certificate-sign-from-api/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/excelfore-certificate-sign-from-api.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "excelfore-certificate-sign-from-api - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/excelfore-certificate-sign-from-api.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "execute-back-office-step-function - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/execute-back-office-step-function/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/execute-back-office-step-function.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "execute-back-office-step-function - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/execute-back-office-step-function.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "execute-step-function - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/execute-step-function/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/execute-step-function.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "execute-step-function - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/execute-step-function.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "generate-masked-VIN - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/generate-masked-VIN/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/generate-masked-VIN.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "generate-masked-VIN - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/generate-masked-VIN.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "get-certificate-arn - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/get-certificate-arn/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/get-certificate-arn.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "get-certificate-arn - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/get-certificate-arn.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "handle-error-message - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/handle-error-message/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/handle-error-message.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "handle-error-message - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/handle-error-message.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "lambda-cert-rotn-complete - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/lambda-cert-rotn-complete/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/lambda-cert-rotn-complete.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "lambda-cert-rotn-complete - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/lambda-cert-rotn-complete.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "lambda-cert-rotn-initiate - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/lambda-cert-rotn-initiate/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/lambda-cert-rotn-initiate.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "lambda-cert-rotn-initiate - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/lambda-cert-rotn-initiate.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+          
+          - task: ArchiveFiles@2
+            displayName: "lambda-decommission - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/lambda-decommission/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/lambda-decommission.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "lambda-decommission - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/lambda-decommission.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "trigger-vehicle-cert-rotation - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/trigger-vehicle-cert-rotation/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/trigger-vehicle-cert-rotation.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "trigger-vehicle-cert-rotation - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/trigger-vehicle-cert-rotation.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "lambda-conn-check-cert-fetch - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/lambda-conn-check-cert-fetch/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/lambda-conn-check-cert-fetch.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "lambda-conn-check-cert-fetch - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/lambda-conn-check-cert-fetch.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "lambda-conn-check-cert-update - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/lambda-conn-check-cert-update/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/lambda-conn-check-cert-update.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "lambda-conn-check-cert-update - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/lambda-conn-check-cert-update.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "lambda-intermediate-ca-cert-rotn - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/lambda-intermediate-ca-cert-rotn/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/lambda-intermediate-ca-cert-rotn.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "lambda-intermediate-ca-cert-rotn - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/lambda-intermediate-ca-cert-rotn.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "lambda-quarantine - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/lambda-quarantine/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/lambda-quarantine.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "lambda-quarantine - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/lambda-quarantine.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "lambda-tcu-change - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/lambda-tcu-change/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/lambda-tcu-change.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "lambda-tcu-change - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/lambda-tcu-change.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+              
+          - task: ArchiveFiles@2
+            displayName: "get-certificate-status - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/get-certificate-status/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/get-certificate-status.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "get-certificate-status - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/get-certificate-status.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+          
+          - task: ArchiveFiles@2
+            displayName: "get-intermediate-ca - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/get-intermediate-ca/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/get-intermediate-ca.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "get-intermediate-ca - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/get-intermediate-ca.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+          
+          - task: ArchiveFiles@2
+            displayName: "vehicle-masked-data-redis - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/vehicle-masked-data-redis/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/vehicle-masked-data-redis.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "vehicle-masked-data-redis - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/vehicle-masked-data-redis.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+          
+          - task: ArchiveFiles@2
+            displayName: "vehicle-masked-data-redis - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/vehicle-masked-data-redis/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/vehicle-masked-data-redis.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "vehicle-masked-data-redis - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/vehicle-masked-data-redis.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+
+          - task: ArchiveFiles@2
+            displayName: "associate-lks-template-for-vds - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/associate-lks-template-for-vds/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/associate-lks-template-for-vds.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "associate-lks-template-for-vds - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/associate-lks-template-for-vds.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "tcu-provision - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/tcu-provision/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/tcu-provision.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "tcu-provision - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/tcu-provision.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+
+          - task: ArchiveFiles@2
+            displayName: "lambda-rds-passwd-rotation - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/lambda-rds-passwd-rotation/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/lambda-rds-passwd-rotation.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "lambda-rds-passwd-rotation - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/lambda-rds-passwd-rotation.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+          
+          - task: ArchiveFiles@2
+            displayName: "map-b2b-clientid - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/map-b2b-clientid/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/map-b2b-clientid.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true 
+          - task: PublishBuildArtifacts@1
+            displayName: "map-b2b-clientid - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/map-b2b-clientid.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container'
+          
+          - task: ArchiveFiles@2
+            displayName: "get-b2b-map-detail - Archive Files Step"
+            inputs:
+              rootFolderOrFile: '$(Build.SourcesDirectory)/HMCL/src/get-b2b-map-detail/'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/src/get-b2b-map-detail.zip'
+              artifactName: Lambda
+              replaceExistingArchive: true 
+          - task: PublishBuildArtifacts@1
+            displayName: "map-b2b-clientid - Publish built artifacts"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/src/get-b2b-map-detail.zip'
+              ArtifactName: 'Lambda'
+              publishLocation: 'Container' 
+
+      - job: S3Upload
+        dependsOn:
+          - ArchiveLambdaFiles
+        displayName: S3 Upload Job
+        steps:
+          - checkout: self
+          - task: DownloadBuildArtifacts@1
+            displayName: "Downloading Lambda .zip Files"
+            inputs:
+              buildType: 'current'
+              downloadType: 'specific'
+              itemPattern: '**/*.zip'
+              downloadPath: '$(Build.ArtifactStagingDirectory)'
+          - task: Bash@3
+            condition: eq(variables['Build.SourceBranch'], 'refs/heads/dev')
+            displayName: "DEV - S3 Upload Task via Bash"
+            env:
+              dev_account_id: $(dev_account_id)
+              DEV_LAMBDA_S3_BUCKET: $(DEV_LAMBDA_S3_BUCKET)
+              LOWERCASE_BRANCH_NAME: $(LOWERCASE_BRANCH_NAME)
+              REGION: $(REGION_NAME)
+              ENTITY_NAME: $(ENTITY_NAME)
+              ROLE_NAME: $(role_name)
+              Build_ArtifactStagingDirectory: $(Build.ArtifactStagingDirectory)
+            inputs:
+              targetType: filePath
+              filePath: ./HMCL/Pipeline_Scripts/s3-upload.sh
+              failOnStderr: true
+          - task: Bash@3
+            condition: eq(variables['Build.SourceBranch'], 'refs/heads/qa')
+            displayName: "QA - S3 Upload Task via Bash"
+            env:
+              qa_account_id: $(qa_account_id)
+              QA_LAMBDA_S3_BUCKET: $(QA_LAMBDA_S3_BUCKET)
+              LOWERCASE_BRANCH_NAME: $(LOWERCASE_BRANCH_NAME)
+              REGION: $(REGION_NAME)
+              ENTITY_NAME: $(ENTITY_NAME)
+              ROLE_NAME: $(role_name)
+              Build_ArtifactStagingDirectory: $(Build.ArtifactStagingDirectory)
+            inputs:
+              targetType: filePath
+              filePath: ./HMCL/Pipeline_Scripts/s3-upload.sh
+              failOnStderr: true
+          - task: Bash@3
+            condition: eq(variables['Build.SourceBranch'], 'refs/heads/uat')
+            displayName: "UAT - S3 Upload Task via Bash"
+            env:
+              uat_account_id: $(uat_account_id)
+              UAT_LAMBDA_S3_BUCKET: $(UAT_LAMBDA_S3_BUCKET)
+              ENTITY_NAME: $(ENTITY_NAME)
+              ROLE_NAME: $(role_name)
+              LOWERCASE_BRANCH_NAME: $(LOWERCASE_BRANCH_NAME)
+              Build_ArtifactStagingDirectory: $(Build.ArtifactStagingDirectory)
+            inputs:
+              targetType: filePath
+              filePath: ./HMCL/Pipeline_Scripts/s3-upload.sh
+              failOnStderr: true
+          - task: Bash@3
+            condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+            displayName: "PROD - S3 Upload Task via Bash"
+            env:
+              prod_account_id: $(prod_account_id)
+              PROD_LAMBDA_S3_BUCKET: $(PROD_LAMBDA_S3_BUCKET)
+              ENTITY_NAME: $(ENTITY_NAME)
+              ROLE_NAME: $(role_name)
+              LOWERCASE_BRANCH_NAME: $(LOWERCASE_BRANCH_NAME)
+              Build_ArtifactStagingDirectory: $(Build.ArtifactStagingDirectory)
+            inputs:
+              targetType: filePath
+              filePath: ./HMCL/Pipeline_Scripts/s3-upload.sh
+              failOnStderr: true

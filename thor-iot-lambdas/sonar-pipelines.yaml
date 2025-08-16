@@ -1,0 +1,424 @@
+trigger:
+  branches:
+    include:
+      - dev-sonar-coverage-test
+      - dev
+      - qa
+      - uat  
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: DevSecOpsLibrary
+
+stages:
+  - stage: InstallDependencies
+    displayName: 'SetupStage'
+    jobs:
+      - job: InstallDependencies
+        steps:
+                  
+          - script: |
+              npm install -g jest jest-junit --save-dev
+            displayName: 'Install Jest Globally'
+        
+          - script: |
+              cd HMCL/src/handle-error-message
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for handle-error-message'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/handle-error-message/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/handle-error-message/coverage/'
+              artifact: 'handle-error-message'
+              publishLocation: 'pipeline'
+###################################################################
+          - script: |
+              cd HMCL/src/get-certificate-arn
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for get-certificate-arn'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/get-certificate-arn/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/get-certificate-arn/coverage/'
+              artifact: 'get-certificate-arn'
+              publishLocation: 'pipeline'
+######################################
+          - script: |
+              cd HMCL/src/associate-lks-template-for-vds
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for associate-lks-template-for-vds'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/associate-lks-template-for-vds/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/associate-lks-template-for-vds/coverage/'
+              artifact: 'associate-lks-template-for-vds'
+              publishLocation: 'pipeline'
+#######################################
+          - script: |
+              cd HMCL/src/create-zip-file-and-s3-upload
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for create-zip-file-and-s3-upload'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/create-zip-file-and-s3-upload/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/create-zip-file-and-s3-upload/coverage/'
+              artifact: 'create-zip-file-and-s3-upload'
+              publishLocation: 'pipeline'
+######################################
+          - script: |
+              cd HMCL/src/deactivate-and-delete-older-certificate
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for deactivate-and-delete-older-certificate'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/deactivate-and-delete-older-certificate/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/deactivate-and-delete-older-certificate/coverage/'
+              artifact: 'deactivate-and-delete-older-certificate'
+              publishLocation: 'pipeline'
+######################################
+          - script: |
+              cd HMCL/src/download-back-office-certificate
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for download-back-office-certificate'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/download-back-office-certificate/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/download-back-office-certificate/coverage/'
+              artifact: 'download-back-office-certificate'
+              publishLocation: 'pipeline'
+#########################################
+          - script: |
+              cd HMCL/src/excelfore-certificate-sign-from-api
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for excelfore-certificate-sign-from-api'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/excelfore-certificate-sign-from-api/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/excelfore-certificate-sign-from-api/coverage/'
+              artifact: 'excelfore-certificate-sign-from-api'
+              publishLocation: 'pipeline'
+#######################################
+          - script: |
+              cd HMCL/src/execute-back-office-step-function
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for execute-back-office-step-function'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/execute-back-office-step-function/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/execute-back-office-step-function/coverage/'
+              artifact: 'execute-back-office-step-function'
+              publishLocation: 'pipeline'
+#######################################
+          - script: |
+              cd HMCL/src/execute-step-function
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for execute-step-function'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/execute-step-function/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/execute-step-function/coverage/'
+              artifact: 'execute-step-function'
+              publishLocation: 'pipeline'
+#####################################
+          - script: |
+              cd HMCL/src/generate-masked-VIN
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for generate-masked-VIN'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/generate-masked-VIN/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/generate-masked-VIN/coverage/'
+              artifact: 'generate-masked-VIN'
+              publishLocation: 'pipeline'
+################################
+          - script: |
+              cd HMCL/src/get-certificate-status
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for get-certificate-status'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/get-certificate-status/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/get-certificate-status/coverage/'
+              artifact: 'get-certificate-status'
+              publishLocation: 'pipeline'
+######################################
+          - script: |
+              cd HMCL/src/get-intermediate-ca
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for get-intermediate-ca'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/get-intermediate-ca/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/get-intermediate-ca/coverage/'
+              artifact: 'get-intermediate-ca'
+              publishLocation: 'pipeline'
+########################################
+          - script: |
+              cd HMCL/src/lambda-cert-rotn-complete
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for lambda-cert-rotn-complete'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/lambda-cert-rotn-complete/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/lambda-cert-rotn-complete/coverage/'
+              artifact: 'lambda-cert-rotn-complete'
+              publishLocation: 'pipeline'
+#######################################
+          - script: |
+              cd HMCL/src/lambda-cert-rotn-initiate
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for lambda-cert-rotn-initiate'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/lambda-cert-rotn-initiate/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/lambda-cert-rotn-initiate/coverage/'
+              artifact: 'lambda-cert-rotn-initiate'
+              publishLocation: 'pipeline'
+########################################
+          - script: |
+              cd HMCL/src/lambda-conn-check-cert-fetch
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for lambda-conn-check-cert-fetch'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/lambda-conn-check-cert-fetch/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/lambda-conn-check-cert-fetch/coverage/'
+              artifact: 'lambda-conn-check-cert-fetch'
+              publishLocation: 'pipeline'
+#######################################
+          - script: |
+              cd HMCL/src/lambda-conn-check-cert-update
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for lambda-conn-check-cert-update'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/lambda-conn-check-cert-update/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/lambda-conn-check-cert-update/coverage/'
+              artifact: 'lambda-conn-check-cert-update'
+              publishLocation: 'pipeline'
+#################################
+          - script: |
+              cd HMCL/src/lambda-decommission
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for lambda-decommission'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/lambda-decommission/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/lambda-decommission/coverage/'
+              artifact: 'lambda-decommission'
+              publishLocation: 'pipeline'
+################################
+          - script: |
+              cd HMCL/src/lambda-intermediate-ca-cert-rotn
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for lambda-intermediate-ca-cert-rotn'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/lambda-intermediate-ca-cert-rotn/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/lambda-intermediate-ca-cert-rotn/coverage/'
+              artifact: 'lambda-intermediate-ca-cert-rotn'
+              publishLocation: 'pipeline'
+########################################
+          - script: |
+              cd HMCL/src/lambda-quarantine
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for lambda-quarantine'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/lambda-quarantine/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/lambda-quarantine/coverage/'
+              artifact: 'lambda-quarantine'
+              publishLocation: 'pipeline'
+################################
+          - script: |
+              cd HMCL/src/lambda-tcu-change
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for lambda-tcu-change'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/lambda-tcu-change/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/lambda-tcu-change/coverage/'
+              artifact: 'lambda-tcu-change'
+              publishLocation: 'pipeline'
+########################################
+          - script: |
+              cd HMCL/src/trigger-vehicle-cert-rotation
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for trigger-vehicle-cert-rotation'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/trigger-vehicle-cert-rotation/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/trigger-vehicle-cert-rotation/coverage/'
+              artifact: 'trigger-vehicle-cert-rotation'
+              publishLocation: 'pipeline'
+###############################
+          - script: |
+              cd HMCL/src/vehicle-masked-data-redis
+              npm install babel-jest @babel/core @babel/preset-env --save-dev  # Install babel-jest and required Babel packages
+              npm test --coverage
+            displayName: 'Install and Run Jest Tests for vehicle-masked-data-redis'
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/vehicle-masked-data-redis/coverage/lcov.info'
+              failIfCoverageEmpty: true
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/HMCL/src/vehicle-masked-data-redis/coverage/'
+              artifact: 'vehicle-masked-data-redis'
+              publishLocation: 'pipeline'
+#######################################
+
+          - task: SonarQubePrepare@7
+            inputs:
+              SonarQube: 'sc-sq-iossdk'
+              scannerMode: 'CLI'
+              configMode: 'manual'
+              cliProjectKey: '$(thor-iot-lambdas)'
+              cliSources: '.'
+              extraProperties: |
+                sonar.language=js
+                sonar.javascript.lcov.reportPaths=$(System.DefaultWorkingDirectory)/HMCL/src/handle-error-message/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/get-certificate-arn/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/associate-lks-template-for-vds/coverage/lcov.info,$(System.DefaultWorkingDirectory)/HMCL/src/download-back-office-certificate/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/deactivate-and-delete-older-certificate/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/create-zip-file-and-s3-upload/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/excelfore-certificate-sign-from-api/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/execute-back-office-step-function/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/execute-step-function/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/generate-masked-VIN/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/get-certificate-status/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/get-intermediate-ca/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-cert-rotn-complete/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-cert-rotn-initiate/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-conn-check-cert-fetch/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-conn-check-cert-update/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-decommission/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-intermediate-ca-cert-rotn/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-quarantine/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-tcu-change/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/trigger-vehicle-cert-rotation/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/vehicle-masked-data-redis/coverage/lcov.info
+                sonar.sourceEncoding=UTF-8
+                sonar.verbose=true
+                sonar.exclusions=**/MendReport.py, **/node_modules/**, **/test/**, **/babel.config.js, **/jest.config.js, **/package-lock.json, **/package.json
+                 #sonar.tests=HMCL/src
+                 #sonar.javascript.lcov.reportPaths=$(System.DefaultWorkingDirectory)/HMCL/src/handle-error-message/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/get-certificate-arn/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/associate-lks-template-for-vds/coverage/lcov.info,$(System.DefaultWorkingDirectory)/HMCL/src/download-back-office-certificate/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/deactivate-and-delete-older-certificate/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/create-zip-file-and-s3-upload/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/excelfore-certificate-sign-from-api/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/execute-back-office-step-function/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/execute-step-function/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/generate-masked-VIN/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/get-certificate-status/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/get-intermediate-ca/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-cert-rotn-complete/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-cert-rotn-initiate/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-conn-check-cert-fetch/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-conn-check-cert-update/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-decommission/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-intermediate-ca-cert-rotn/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-quarantine/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/lambda-tcu-change/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/trigger-vehicle-cert-rotation/coverage/lcov.info, $(System.DefaultWorkingDirectory)/HMCL/src/vehicle-masked-data-redis/coverage/lcov.info
+
+          - task: SonarQubeAnalyze@7
+            inputs:
+              jdkversion: 'JAVA_HOME_17_X64'
+
+          - task: SonarQubePublish@7
+            inputs:
+              pollingTimeoutSec: '400'

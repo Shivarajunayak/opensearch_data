@@ -1,0 +1,102 @@
+trigger: none
+# - dev
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  project_name: 'CVPT_-_Thor_Apps' # Set this as needed set project in with "_"not use space
+  repo_name: 'thor-iot-lambdas' # Set this as needed set repo name in with "_" not use space
+  url: 'https://dev.azure.com/hero-ev-team/CVPT%20-%20Thor%20Apps/_build/results?buildId=$(Build.BuildId)&view=whitesource.whiteSource-bolt-v2.build-tab.wss#loaded'
+  json_prefix: 'db38c4e7-5b29-4a2b-ae8a-ac752a2736c4_218_'
+
+steps:
+- task: WhiteSource@21
+  inputs:
+    cwd: '$(System.DefaultWorkingDirectory)'
+    projectName: 'Thor-api-live-tracking'
+
+- script: |
+    echo "Current Build ID: $(Build.BuildId)"
+    echo "##vso[task.setvariable variable=buildId;isOutput=true]$(Build.BuildId)"
+  name: setVars
+  displayName: 'Set Build ID for Use in Later Stages'
+
+- script: |
+    ls -l $(System.DefaultWorkingDirectory)
+  displayName: 'List files in the working directory before running Python script'
+
+- script: |
+    json_file=$(find $(System.DefaultWorkingDirectory) -name "$(json_prefix)$(Build.BuildId).json")
+    if [ -f "$json_file" ]; then
+      mv "$json_file" "$(System.DefaultWorkingDirectory)/renamed_json_file.json"
+    else
+      echo "JSON file not found"
+      exit 1
+    fi
+  displayName: 'Find and rename JSON file'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(System.DefaultWorkingDirectory)/renamed_json_file.json'
+    artifact: 'RenamedJsonFile'
+    publishLocation: 'pipeline'
+
+- task: DownloadPipelineArtifact@2
+  inputs:
+    artifact: 'RenamedJsonFile'
+    downloadPath: '$(System.DefaultWorkingDirectory)/json_artifacts'
+
+- script: |
+    python -m pip install openpyxl pandas
+  displayName: 'Install required Python packages'
+
+- script: |
+    if [ ! -f "$(System.DefaultWorkingDirectory)/json_artifacts/renamed_json_file.json" ]; then
+      echo "Error: renamed_json_file.json not found!"
+      exit 1
+    fi
+    if [ ! -f "MendReport.py" ]; then
+      echo "Error: MendReport.py not found!"
+      exit 1
+    fi
+    echo "Both files exist. Proceeding to execute the script."
+  displayName: 'Check files existence'
+
+- script: |
+    cat $(System.DefaultWorkingDirectory)/json_artifacts/renamed_json_file.json
+  displayName: 'Display JSON file content'
+
+- script: |
+    ls -l $(System.DefaultWorkingDirectory)
+  displayName: 'List files in the working directory before saving Excel'
+
+- script: |
+    python MendReport.py $(System.DefaultWorkingDirectory)/json_artifacts/renamed_json_file.json $(project_name) $(repo_name) $(Build.BuildId) $(url)
+  displayName: 'Run Python script with JSON file'
+
+- script: |
+    ls -l $(System.DefaultWorkingDirectory)
+  displayName: 'List files in the working directory after running Python script'
+
+# - task: PublishPipelineArtifact@1
+#   inputs:
+#     targetPath: '$(System.DefaultWorkingDirectory)/$(repo_name)_mend_report.xlsx'
+#     artifact: 'Report'
+#     PathtoPublish: '.'
+#     publishLocation: 'Container'
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      mkdir $(Build.ArtifactStagingDirectory)/report
+      cp $(System.DefaultWorkingDirectory)/$(repo_name)_mend_report.xlsx $(Build.ArtifactStagingDirectory)/report/
+
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Analyzed Test Results'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/report'
+    ArtifactName: 'Report'
+    publishLocation: 'Container'

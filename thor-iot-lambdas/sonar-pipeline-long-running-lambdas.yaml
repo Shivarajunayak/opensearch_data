@@ -1,0 +1,242 @@
+# Node.js with React
+# Build a Node.js project that uses React.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+  branches:
+    include:
+      - dev
+      - qa
+      - uat  
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+   - group: DevSecOpsLibrary
+
+stages:
+  - stage: InstallDependencies
+    displayName: 'SetupStage'
+    jobs:
+      - job: 'InstallDependencies'
+        steps:
+          - script: |
+              npm install -g jest jest-junit --save-dev
+            displayName: 'Install Jest Globally'
+  - stage: TestExecution
+    displayName: 'Test Execution Stage'
+    jobs:
+      - job: RunTestsLambdaCertUpdate
+        timeoutInMinutes: 360
+        displayName: 'Run Tests for lambda-conn-check-cert-update'
+        steps:
+          - script: |
+              find HMCL/src/lambda-conn-check-cert-update -name 'package.json' -execdir npm install \;
+              find HMCL/src/lambda-conn-check-cert-update -name 'package.json' -execdir npm run test \;
+            displayName: 'Install and Run Jest Tests for lambda-conn-check-cert-update'
+          
+          - task: SonarQubePrepare@7
+            inputs:
+              SonarQube: 'sc-sq-iossdk'
+              scannerMode: 'CLI'
+              configMode: 'manual'
+              cliProjectKey: '$(thor-iot-lambdas)'
+              cliSources: '.'
+              extraProperties: |
+                # sonar.coverage.exclusions=**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js,HMCL/src/trigger-vehicle-cert-rotation/index.mjs
+                sonar.exclusions=**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js,HMCL/src/trigger-vehicle-cert-rotation/index.mjs,HMCL/lib/node_modules/**
+                
+                sonar.javascript.lcov.reportPaths=HMCL/src/lambda-intermediate-ca-cert-rotn/coverage/lcov.info, HMCL/src/lambda-cert-rotn-complete/coverage/lcov.info, HMCL/src/associate-lks-template-for-vds/coverage/lcov.info, HMCL/src/create-zip-file-and-s3-upload/coverage/lcov.info, HMCL/src/deactivate-and-delete-older-certificate/coverage/lcov.info, HMCL/src/lambda-tcu-change/coverage/lcov.info, HMCL/src/download-back-office-certificate/coverage/lcov.info, HMCL/src/excelfore-certificate-sign-from-api/coverage/lcov.info, HMCL/src/execute-back-office-step-function/coverage/lcov.info, HMCL/src/lambda-conn-check-cert-update/coverage/lcov.info
+                sonar.sourceEncoding=UTF-8
+                # sonar.coverage.exclusions:**/test/**,**/trigger-vehicle-cert-rotation/**,src/trigger-vehicle-cert-rotation/**,HMCL/src/trigger-vehicle-cert-rotation/index.mjs,**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js
+      
+                # sonar.exclusions:**/trigger-vehicle-cert-rotation/**,src/trigger-vehicle-cert-rotation/**,HMCL/src/trigger-vehicle-cert-rotation/index.mjs,**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js
+          - task: SonarQubeAnalyze@7
+            inputs:
+              jdkversion: 'JAVA_HOME_17_X64'
+
+          - task: SonarQubePublish@7
+            inputs:
+              pollingTimeoutSec: '300'
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'HMCL/src/lambda-conn-check-cert-update/coverage/lcov.info'
+              failIfCoverageEmpty: true
+      # - job: RunTestsExecuteBackofficeStepFunction
+      #   displayName: 'Run Tests for execute-backoffice-step-function'
+      #   steps:
+      #     - script: |
+      #         find HMCL/src/execute-back-office-step-function -name 'package.json' -execdir npm install \;
+      #         find HMCL/src/execute-back-office-step-function -name 'package.json' -execdir npm run test \;
+      #       displayName: 'Install and Run Jest Tests for Execute BackOffice Step Function'
+      #     - task: PublishCodeCoverageResults@2
+      #       inputs:
+      #         summaryFileLocation: 'HMCL/src/execute-back-office-step-function/coverage/lcov.info'
+      #         failIfCoverageEmpty: true
+      # - job: RunTestsExcelforeCertificateSignfromAPI
+      #   displayName: 'Run Tests for ExcelforeCertificateSignfromAPI'
+      #   steps:
+      #     - script: |
+      #         find HMCL/src/excelfore-certificate-sign-from-api -name 'package.json' -execdir npm install \;
+      #         find HMCL/src/excelfore-certificate-sign-from-api -name 'package.json' -execdir npm run test \;
+      #       displayName: 'Install and Run Jest Tests for Excelfore Certificate SignfromAPI'
+      #     - task: PublishCodeCoverageResults@2
+      #       inputs:
+      #         summaryFileLocation: 'HMCL/src/excelfore-certificate-sign-from-api/coverage/lcov.info'
+      #         failIfCoverageEmpty: true
+      # - job: RunTestsDownloadBackofficeCertificate
+      #   displayName: 'Run Tests for DownloadBackofficeCertificate'
+      #   steps:
+      #     - script: |
+      #         find HMCL/src/download-back-office-certificate -name 'package.json' -execdir npm install \;
+      #         find HMCL/src/download-back-office-certificate -name 'package.json' -execdir npm run test \;
+      #       displayName: 'Install and Run Jest Tests for Download Backoffice Certificate'
+      #     - task: PublishCodeCoverageResults@2
+      #       inputs:
+      #         summaryFileLocation: 'HMCL/src/download-back-office-certificate/coverage/lcov.info'
+      #         failIfCoverageEmpty: true
+      # - job: RunTestsLambdaTCUChange
+      #   displayName: 'Run Tests for LambdaTCUChange'
+      #   steps:
+      #     - script: |
+      #         find HMCL/src/lambda-tcu-change -name 'package.json' -execdir npm install \;
+      #         find HMCL/src/lambda-tcu-change -name 'package.json' -execdir npm run test \;
+      #       displayName: 'Install and Run Jest Tests for Lambda TCU Change'
+      #     - task: PublishCodeCoverageResults@2
+      #       inputs:
+      #         summaryFileLocation: 'HMCL/src/lambda-tcu-change/coverage/lcov.info'
+      #         failIfCoverageEmpty: true
+      # - job: RunTestsDeactivateOlderCert
+      #   displayName: 'Run Tests for DeactivateOlderCert'
+      #   steps:
+      #     - script: |
+      #         find HMCL/src/deactivate-and-delete-older-certificate -name 'package.json' -execdir npm install \;
+      #         find HMCL/src/deactivate-and-delete-older-certificate -name 'package.json' -execdir npm run test \;
+      #       displayName: 'Install and Run Jest Tests for deactivate-and-delete-older-certificate'
+      #     - task: PublishCodeCoverageResults@2
+      #       inputs:
+      #         summaryFileLocation: 'HMCL/src/deactivate-and-delete-older-certificate/coverage/lcov.info'
+      #         failIfCoverageEmpty: true
+      # - job: CreateZipandS3Upload
+      #   timeoutInMinutes: 360
+      #   displayName: 'Run Tests for CreateZipandS3Upload'
+      #   steps:
+      #     - script: |
+      #         find HMCL/src/create-zip-file-and-s3-upload -name 'package.json' -execdir npm install \;
+      #         find HMCL/src/create-zip-file-and-s3-upload -name 'package.json' -execdir npm run test \;
+      #       displayName: 'Install and Run Jest Tests for create-zip-file-and-s3-upload'
+      #     - task: PublishCodeCoverageResults@2
+      #       inputs:
+      #         summaryFileLocation: 'HMCL/src/create-zip-file-and-s3-upload/coverage/lcov.info'
+      #         failIfCoverageEmpty: true
+      # - job: AssociateLKSTemplate
+      #   displayName: 'Run Tests for AssociateLKSTemplate'
+      #   steps:
+      #     - script: |
+      #         find HMCL/src/associate-lks-template-for-vds -name 'package.json' -execdir npm install \;
+      #         cp -prf HMCL/lib/node_modules/@aws-sdk/client-iotfleetwise HMCL/src/associate-lks-template-for-vds/node_modules/@aws-sdk/
+      #         find HMCL/src/associate-lks-template-for-vds -name 'package.json' -execdir npm run test \;
+      #       displayName: 'Install and Run Jest Tests for associate-lks-template-for-vds'
+      #     - task: PublishCodeCoverageResults@2
+      #       inputs:
+      #         summaryFileLocation: 'HMCL/src/associate-lks-template-for-vds/coverage/lcov.info'
+      #         failIfCoverageEmpty: true
+      # - job: CertRotationComplete
+      #   displayName: 'Run Tests for CertRotationComplete'
+      #   steps:
+      #     - script: |
+      #         find HMCL/src/lambda-cert-rotn-complete -name 'package.json' -execdir npm install \;
+      #         find HMCL/src/lambda-cert-rotn-complete -name 'package.json' -execdir npm run test \;
+      #       displayName: 'Install and Run Jest Tests for lambda-cert-rotn-complete'
+      #     - task: PublishCodeCoverageResults@2
+      #       inputs:
+      #         summaryFileLocation: 'HMCL/src/lambda-cert-rotn-complete/coverage/lcov.info'
+      #         failIfCoverageEmpty: true
+      # - job: LambdaIntermediateCertRotation
+      #   displayName: 'Run Tests for LambdaIntermediateCertRotation'
+      #   steps:
+      #     - script: |
+      #         find HMCL/src/lambda-intermediate-ca-cert-rotn -name 'package.json' -execdir npm install \;
+      #         find HMCL/src/lambda-intermediate-ca-cert-rotn -name 'package.json' -execdir npm run test \;
+      #       displayName: 'Install and Run Jest Tests for lambda-intermediate-ca-cert-rotn'
+      #     - task: PublishCodeCoverageResults@2
+      #       inputs:
+      #         summaryFileLocation: 'HMCL/src/lambda-intermediate-ca-cert-rotn/coverage/lcov.info'
+      #         failIfCoverageEmpty: true
+
+      # - job: SonarQubeAnalysis
+      #   steps:
+      #     - task: SonarQubePrepare@7
+      #       inputs:
+      #         SonarQube: 'sc-sq-iossdk'
+      #         scannerMode: 'CLI'
+      #         configMode: 'manual'
+      #         cliProjectKey: '$(thor-iot-lambdas)'
+      #         cliSources: '.'
+      #         extraProperties: |
+      #           # sonar.coverage.exclusions=**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js,HMCL/src/trigger-vehicle-cert-rotation/index.mjs
+      #           sonar.exclusions=**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js,HMCL/src/trigger-vehicle-cert-rotation/index.mjs,HMCL/lib/node_modules/**
+                
+      #           sonar.javascript.lcov.reportPaths=HMCL/src/lambda-intermediate-ca-cert-rotn/coverage/lcov.info, HMCL/src/lambda-cert-rotn-complete/coverage/lcov.info, HMCL/src/associate-lks-template-for-vds/coverage/lcov.info, HMCL/src/create-zip-file-and-s3-upload/coverage/lcov.info, HMCL/src/deactivate-and-delete-older-certificate/coverage/lcov.info, HMCL/src/lambda-tcu-change/coverage/lcov.info, HMCL/src/download-back-office-certificate/coverage/lcov.info, HMCL/src/excelfore-certificate-sign-from-api/coverage/lcov.info, HMCL/src/execute-back-office-step-function/coverage/lcov.info, HMCL/src/lambda-conn-check-cert-update/coverage/lcov.info
+      #           sonar.sourceEncoding=UTF-8
+      #           # sonar.coverage.exclusions:**/test/**,**/trigger-vehicle-cert-rotation/**,src/trigger-vehicle-cert-rotation/**,HMCL/src/trigger-vehicle-cert-rotation/index.mjs,**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js
+      
+      #           # sonar.exclusions:**/trigger-vehicle-cert-rotation/**,src/trigger-vehicle-cert-rotation/**,HMCL/src/trigger-vehicle-cert-rotation/index.mjs,**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js
+
+      #     - task: SonarQubeAnalyze@7
+      #       inputs:
+      #         jdkversion: 'JAVA_HOME_17_X64'
+
+      #     - task: SonarQubePublish@7
+      #       inputs:
+      #         pollingTimeoutSec: '300'
+
+      # - job: FindTheFile
+      #   displayName: 'Find the file'
+      #   steps:
+      #     - script: |
+      #         find . -type f -name *.xml
+  # - stage: CodeQuality
+  #   jobs:
+  #     - job: SonarQubeAnalysis
+  #       steps:
+  #         # - task: SonarQubePrepare@7
+  #         #   inputs:
+  #         #     SonarQube: 'sc-sq-iossdk'
+  #         #     scannerMode: 'CLI'
+  #         #     configMode: 'manual'
+  #         #     cliProjectKey: '$(thor-iot-lambdas)'
+  #         #     cliSources: '.'
+  #         #     extraProperties: |
+  #         #       # sonar.coverage.exclusions=**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js,HMCL/src/trigger-vehicle-cert-rotation/index.mjs
+  #         #       sonar.exclusions=**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js,HMCL/src/trigger-vehicle-cert-rotation/index.mjs,HMCL/lib/node_modules/**
+  #         #       sonar.javascript.lcov.reportPaths='/home/vsts/work/1/s/HMCL/src/lambda-conn-check-cert-fetch/coverage/lcov.info'
+  #         #       sonar.sourceEncoding=UTF-8
+  #         #       # sonar.coverage.exclusions:**/test/**,**/trigger-vehicle-cert-rotation/**,src/trigger-vehicle-cert-rotation/**,HMCL/src/trigger-vehicle-cert-rotation/index.mjs,**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js
+                
+  #         #       # sonar.exclusions:**/trigger-vehicle-cert-rotation/**,src/trigger-vehicle-cert-rotation/**,HMCL/src/trigger-vehicle-cert-rotation/index.mjs,**/src/**/test/**,**/src/**/jest.config.js,**/src/**/babel.config.js
+
+  #         # - task: SonarQubeAnalyze@7
+  #         #   inputs:
+  #         #     jdkversion: 'JAVA_HOME_17_X64'
+
+  #         # - task: SonarQubePublish@7
+  #         #   inputs:
+  #         #     pollingTimeoutSec: '300'
+          
+
+
+# - task: PublishTestResults@2
+#   inputs:
+#     testResultsFormat: 'Junit'
+#     mergeTestResults: true
+#     testResultsFiles: '**/jest-junit.xml'
+#     testRunTitle: 'Jest Unit Tests'
+
+          # - task: PublishCodeCoverageResults@2
+          #   inputs:
+          #     summaryFileLocation: '**/cobertura-coverage.xml'
+          #     failIfCoverageEmpty: true
