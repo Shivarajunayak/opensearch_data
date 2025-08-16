@@ -1,0 +1,68 @@
+# pipeline/campaign-status-sync-cj.yml
+trigger:
+  branches:
+    include:
+      - dev
+      - qa
+      - uat
+      - main
+  paths:
+    include:
+      - campaign-status-sync-cj/**
+      # - activated-user-status-cj/**
+      # - expire-user-status-cj/**
+      # - kong-apispec-sync-cj/**
+
+pool:
+  vmImage: ubuntu-latest
+
+jobs:
+- job: Build
+  steps:
+    - checkout: self
+
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: '17'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
+
+    - task: SonarQubePrepare@7
+      inputs:
+        SonarQube: 'sc-sq-iossdk'
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: 'campaign-status-sync-cj'
+        cliProjectName: 'campaign-status-sync-cj'
+        extraProperties: |
+          sonar.scanner.connectTimeout=300
+          sonar.ws.timeout=300
+          sonar.sources=src/main/java
+          sonar.tests=src/test/java
+          sonar.exclusions=src/test/**/*.java,**/config/**,**/entity/**,**/properties/*,**/repository/**
+
+    - task: MavenAuthenticate@0
+      inputs:
+        artifactsFeeds: 'Connected_Platform, hero-ev-team, thor-apps-common-utilities'
+
+    - task: Maven@4
+      displayName: 'RUN Maven Tests - campaign-status-sync-cj'
+      timeoutInMinutes: 150
+      continueOnError: true
+      inputs:
+        mavenPomFile: 'campaign-status-sync-cj/pom.xml'
+        goals: 'clean install'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.17'
+        mavenVersionOption: 'Default'
+        mavenOptions: '-Xmx3072m'
+        mavenAuthenticateFeed: false
+        effectivePomSkip: false
+        sonarQubeRunAnalysis: true
+        sqMavenPluginVersionChoice: 'latest'
+
+    - task: SonarQubePublish@7
+      inputs:
+        pollingTimeoutSec: '300'
