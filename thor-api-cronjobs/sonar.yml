@@ -1,0 +1,79 @@
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+trigger:
+  branches:
+    include:
+      # - dev
+      - qa
+      - uat
+      - main
+
+  paths:
+      include:
+      - campaign-status-sync-cj
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+   - group: DevSecOpsLibrary
+
+steps:
+- task: JavaToolInstaller@0
+  inputs:
+    versionSpec: '17'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+
+- task: SonarQubePrepare@7
+  inputs:
+    SonarQube: 'sc-sq-iossdk'
+    scannerMode: 'CLI'
+    configMode: 'manual'
+    cliProjectKey: $(thor-api-cronjobs)
+    cliProjectName: 'thor-api-cronjobs'
+     #extraProperties: |
+     # sonar.coverage.exclusions=**/dto/**,**/model/**,**/collection/**,**/response/**,**/constants/**,**/config/**,**/mapper/**,**/security/**,**/exception/**,**/enums/**,**/contracts/**,**/testdata/**,**/audit/**,**/subscriber/**,**/models/**,**/entity/**
+     # sonar.sources=src/main/java
+     # sonar.tests=src/test/java
+     # sonar.inclusions=**/*.java
+     # sonar.java.binaries=target/classes
+    extraProperties: |
+      # Additional properties that will be passed to the scanner,
+      # Put one key=value per line, example:
+      # sonar.exclusions=**/*.bin
+      sonar.scanner.connectTimeout=300
+      sonar.ws.timeout=300
+      sonar.sources=src/main/java
+      sonar.tests=src/test/java
+      sonar.exclusions=src/test/**/*.java,**/config/**,**/entity/**,**/properties/*,**/repository/**
+
+- task: MavenAuthenticate@0
+  inputs:
+    artifactsFeeds: 'Connected_Platform, hero-ev-team, thor-apps-common-utilities'
+
+- task: Maven@4
+  displayName: 'RUN Maven Based Tests'
+  timeoutInMinutes: 150
+  continueOnError: true
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenPomFile: 'campaign-status-sync-cj/pom.xml'
+    goals: 'clean install'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.17'
+    mavenVersionOption: 'Default'
+    mavenOptions: '-Xmx3072m'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: true
+    sqMavenPluginVersionChoice: 'latest'
+
+- task: SonarQubePublish@7
+  inputs:
+    pollingTimeoutSec: '300'
