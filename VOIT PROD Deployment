@@ -1,0 +1,43 @@
+VOIT PROD Deployment   
+Steps to Update the viot_Socket_Server
+1. Login to the server:
+    * SSH into the viot_Socket_Server.
+    * Switch to the root user:  sudo su -  
+2. Authenticate AWS credentials:
+    * Configure AWS CLI with your access and secret keys:  aws configure  
+3. Login to Amazon ECR:
+    * Navigate to the ECR repository in the AWS Console.
+    * Select the appropriate repository and view the push command.
+    * Copy and run the following command on the server to authenticate Docker with ECR:  aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 903258873155.dkr.ecr.ap-south-1.amazonaws.com  
+4. Pull the latest Docker image:
+    * Use the docker pull command to download the latest socket image:  docker pull <socket_image_URI> docker stop 5fe9506e7d4d docker container prune docker run -d -p 7000:7000 -p 7001:7001 -p 7002:7002 -p 7007:7007 -p 7777:7777 -it -v /logs:/otc-engineering/logs --name socket-server --privileged --restart=always --env-file=./otc-embu-socket.env -i 903258873155.dkr.ecr.ap-south-1.amazonaws.com/otc-hmcl-ev:pro-socket-embu-0.0.3.32-hotfix.1  
+5. Create a new AMI from the updated instance:
+    * Go to EC2 Dashboard → Instances.
+    * Select the viot_Socket_Server instance.
+    * Click on Actions → Image and templates → Create image.
+    * Provide a relevant name (e.g., socket-hotfix-issue) and create the image. 
+6. Update the launch template:
+    * Navigate to EC2 Dashboard → Launch Templates.
+    * Select the socket server template.
+    * Click Actions → Modify template (Create new version).
+    * In the AMI section, choose My AMIs, and select the newly created AMI.
+    * Create the new template version. 
+7. Set the new template version as default:
+    * In the Launch Template Versions section, select the latest version.
+    * Click Actions → Set default version. 
+8. Detach existing instances from the Auto Scaling Group (ASG):
+    * Go to EC2 Dashboard → Auto Scaling Groups.
+    * Select the socket server ASG.
+    * Go to Instance Management, select each instance, and click Actions → Detach.
+    * Note down the following instance IDs:
+        * i-07ed5916587ec50ba
+        * i-082aee8847934eb38
+        * i-0d594e22340b394a5 
+9. Terminate the detached instances:
+    * Search for each instance ID in EC2 → Instances.
+    * For each instance:
+        * Go to Actions → Instance settings → Change termination protection, uncheck the box, and save.
+        * Again, go to Actions → Instance settings → Change stop protection, uncheck the box, and save.
+        * Then go to Instance state → Terminate instance. 
+10. Validate ASG health:
+* After termination, confirm that the ASG automatically launches new instances based on the updated launch template.
